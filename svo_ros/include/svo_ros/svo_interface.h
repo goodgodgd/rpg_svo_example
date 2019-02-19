@@ -96,6 +96,13 @@ public:
   void imuLoop();
   void monoLoop();
   void stereoLoop();
+
+  // Additional features for docker-vo-bench
+  // These functions and variables are to shutdown automatrically
+  void startCheckingFinished();
+  void checkFinished();
+  double time_stamp;
+  std::unique_ptr<std::thread> check_thread_;
 };
 
 } // namespace svo

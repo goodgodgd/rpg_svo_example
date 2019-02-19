@@ -29,6 +29,7 @@ SvoNodeBase::SvoNodeBase()
   }
   svo_interface_.subscribeImage();
   svo_interface_.subscribeRemoteKey();
+  svo_interface_.startCheckingFinished();
 }
 
 void SvoNodeBase::run()

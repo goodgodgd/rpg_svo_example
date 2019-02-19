@@ -77,6 +77,7 @@ SvoInterface::SvoInterface(
   }
 #endif
 
+  time_stamp = 0;
   svo_->start();
 }
 
@@ -86,6 +87,8 @@ SvoInterface::~SvoInterface()
     imu_thread_->join();
   if (image_thread_)
     image_thread_->join();
+  if (check_thread_)
+    check_thread_->join();
   VLOG(1) << "Destructed SVO.";
 }
 
@@ -212,6 +215,8 @@ void SvoInterface::monoCallback(const sensor_msgs::ImageConstPtr& msg)
   processImageBundle(images, msg->header.stamp.toNSec());
   publishResults(images, msg->header.stamp.toNSec());
 
+  time_stamp = msg->header.stamp.toSec();
+
   if(svo_->stage() == Stage::kPaused && automatic_reinitialization_)
     svo_->start();
 
@@ -239,6 +244,8 @@ void SvoInterface::stereoCallback(
 
   processImageBundle({img0, img1}, msg0->header.stamp.toNSec());
   publishResults({img0, img1}, msg0->header.stamp.toNSec());
+
+  time_stamp = msg0->header.stamp.toSec();
 
   if(svo_->stage() == Stage::kPaused && automatic_reinitialization_)
     svo_->start();
@@ -364,6 +371,33 @@ void SvoInterface::stereoLoop()
   while(ros::ok() && !quit_)
   {
     queue.callAvailable(ros::WallDuration(0.1));
+  }
+}
+
+void SvoInterface::startCheckingFinished()
+{
+  check_thread_ = std::unique_ptr<std::thread>(
+        new std::thread(&SvoInterface::checkFinished, this));
+}
+
+void SvoInterface::checkFinished()
+{
+  static double esti_time = 0;
+  std::chrono::milliseconds dura(1000);
+  while(ros::ok() && !quit_)
+  {
+    if(time_stamp > 1 && esti_time > 1 && esti_time - time_stamp > 3)
+    {
+      printf("rosbag seems to finish, exit here at %f, %f\n", time_stamp, esti_time);
+      ros::shutdown();
+    }
+
+    if(time_stamp > esti_time)
+      esti_time = time_stamp;
+    else
+      esti_time += 1.;
+    
+    std::this_thread::sleep_for(dura);
   }
 }
 
