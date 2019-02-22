@@ -32,11 +32,7 @@
 #include <svo/backend/backend_optimizer.h>
 #endif
 
-<<<<<<< HEAD
 #include <svo_ros/tumfilelogger.h>
-=======
-#include "svo_ros/tumfilelogger.h"
->>>>>>> 8fe4bc09c86b510a2adc34679910552bec06abba
 
 namespace svo {
 
@@ -220,16 +216,10 @@ void SvoInterface::monoCallback(const sensor_msgs::ImageConstPtr& msg)
   imageCallbackPreprocessing(msg->header.stamp.toNSec());
 
   processImageBundle(images, msg->header.stamp.toNSec());
-<<<<<<< HEAD
 
 #ifdef VO_BENCH_NO_GUI_AND_ENABLE_LOGGING
   // vo-bench feature to log results
   // it must be HERE before publishResults() 
-=======
-#ifndef VO_BENCH_ON
-  publishResults(images, msg->header.stamp.toNSec());
-#endif
->>>>>>> 8fe4bc09c86b510a2adc34679910552bec06abba
   time_stamp = msg->header.stamp.toSec();
   addLog(tic.toc());
 #else
@@ -267,16 +257,9 @@ void SvoInterface::stereoCallback(
   imageCallbackPreprocessing(msg0->header.stamp.toNSec());
 
   processImageBundle({img0, img1}, msg0->header.stamp.toNSec());
-<<<<<<< HEAD
-
 #ifdef VO_BENCH_NO_GUI_AND_ENABLE_LOGGING
   // vo-bench feature to log results
   // it must be HERE before publishResults() 
-=======
-#ifndef VO_BENCH_ON
-  publishResults({img0, img1}, msg0->header.stamp.toNSec());
-#endif
->>>>>>> 8fe4bc09c86b510a2adc34679910552bec06abba
   time_stamp = msg0->header.stamp.toSec();
   addLog(tic.toc());
 #else
