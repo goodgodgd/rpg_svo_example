@@ -32,6 +32,8 @@
 #include <svo/backend/backend_optimizer.h>
 #endif
 
+#include <svo_ros/tumfilelogger.h>
+
 namespace svo {
 
 SvoInterface::SvoInterface(
@@ -195,6 +197,7 @@ void SvoInterface::monoCallback(const sensor_msgs::ImageConstPtr& msg)
   if(idle_)
     return;
 
+  TicToc tic;
   cv::Mat image;
   try
   {
@@ -213,9 +216,15 @@ void SvoInterface::monoCallback(const sensor_msgs::ImageConstPtr& msg)
   imageCallbackPreprocessing(msg->header.stamp.toNSec());
 
   processImageBundle(images, msg->header.stamp.toNSec());
-  publishResults(images, msg->header.stamp.toNSec());
 
+#ifdef VO_BENCH_NO_GUI_AND_ENABLE_LOGGING
+  // vo-bench feature to log results
+  // it must be HERE before publishResults() 
   time_stamp = msg->header.stamp.toSec();
+  addLog(tic.toc());
+#else
+  publishResults(images, msg->header.stamp.toNSec());
+#endif
 
   if(svo_->stage() == Stage::kPaused && automatic_reinitialization_)
     svo_->start();
@@ -230,6 +239,7 @@ void SvoInterface::stereoCallback(
   if(idle_)
     return;
 
+  TicToc tic;
   cv::Mat img0, img1;
   try {
     img0 = cv_bridge::toCvShare(msg0, "mono8")->image;
@@ -243,7 +253,15 @@ void SvoInterface::stereoCallback(
   imageCallbackPreprocessing(msg0->header.stamp.toNSec());
 
   processImageBundle({img0, img1}, msg0->header.stamp.toNSec());
+
+#ifdef VO_BENCH_NO_GUI_AND_ENABLE_LOGGING
+  // vo-bench feature to log results
+  // it must be HERE before publishResults() 
+  time_stamp = msg0->header.stamp.toSec();
+  addLog(tic.toc());
+#else
   publishResults({img0, img1}, msg0->header.stamp.toNSec());
+#endif
 
   time_stamp = msg0->header.stamp.toSec();
 
@@ -251,6 +269,24 @@ void SvoInterface::stereoCallback(
     svo_->start();
 
   imageCallbackPostprocessing();
+  // addLog(time_stamp, tic.toc());
+}
+
+void SvoInterface::addLog(double elaptime)
+{
+  size_t sz = svo_->getLastFrames()->size();
+  Eigen::Quaterniond q = svo_->getLastFrames()->at(sz-1)->T_world_cam().getRotation().toImplementation();
+  Eigen::Vector3d p = svo_->getLastFrames()->at(sz-1)->T_world_cam().getPosition();
+  std::vector<double> frameres = {time_stamp, p.x(), p.y(), p.z(), q.x(), q.y(), q.z(), q.z(), elaptime};
+  TumFileLogger::instance().push(frameres);
+
+  static int index=0;
+  static double start_time=0;
+  if(start_time < 1.)
+    start_time = time_stamp;
+  if(++index % 100 == 0)
+    std::cout << "[svo2] tracking position: " << index << std::fixed << setprecision(4) << " " 
+          << (time_stamp - start_time) << " " << p.x() << " " << p.y() << " " << p.z() << std::endl;
 }
 
 void SvoInterface::imuCallback(const sensor_msgs::ImuConstPtr& msg)

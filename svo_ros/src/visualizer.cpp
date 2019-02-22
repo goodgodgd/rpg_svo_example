@@ -58,7 +58,6 @@ Visualizer::Visualizer(
   , publish_seeds_uncertainty_(vk::param<bool>(pnh_, "publish_seeds_uncertainty", false))
   , trace_pointcloud_(vk::param<bool>(pnh_, "trace_pointcloud", false))
   , vis_scale_(vk::param<double>(pnh_, "publish_marker_scale", 1.2))
-  , outfile_(vk::param<std::string>(pnh_, "outfile", "/data/output/svo_pose.txt"))
 {
   // Init ROS Marker Publishers
   pub_frames_ = pnh_.advertise<visualization_msgs::Marker>("keyframes", 10);
@@ -84,8 +83,6 @@ Visualizer::Visualizer(
   std::string states_trace_name(trace_dir_+"/trace_states.txt");
   ofs_states_.open(states_trace_name.c_str());
   ofs_states_.precision(10);
-  std::ofstream fout(outfile_, std::ios::trunc);
-  fout.close();
 }
 
 void Visualizer::publishSvoInfo(
@@ -166,14 +163,6 @@ void Visualizer::publishCameraPoses(
     msg_pose->pose.orientation.z = q.z();
     msg_pose->pose.orientation.w = q.w();
     pub_cam_poses_.at(i).publish(msg_pose);
-
-    std::ofstream fout(outfile_, std::ios::app);
-    fout.setf(std::ios::fixed, std::ios::floatfield);
-    fout.precision(6);
-    fout << msg_pose->header.stamp.toSec() << " ";
-    fout.precision(6);
-    fout << p[0] << " " << p[1] << " " << p[2] << " " << q.x() << " " << q.y() << " " << q.z() << " " << q.w() << " " << std::endl;
-    fout.close();
   }
 }
 

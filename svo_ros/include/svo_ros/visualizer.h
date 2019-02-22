@@ -68,7 +68,6 @@ public:
   double vis_scale_;
   std::ofstream ofs_states_;
   std::ofstream ofs_pointcloud_;
-  std::string outfile_;
 
 
   Visualizer(const std::string& trace_dir,
