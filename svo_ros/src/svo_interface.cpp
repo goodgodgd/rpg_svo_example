@@ -263,18 +263,24 @@ void SvoInterface::stereoCallback(
   publishResults({img0, img1}, msg0->header.stamp.toNSec());
 #endif
 
-  time_stamp = msg0->header.stamp.toSec();
-
   if(svo_->stage() == Stage::kPaused && automatic_reinitialization_)
     svo_->start();
 
   imageCallbackPostprocessing();
-  // addLog(time_stamp, tic.toc());
 }
 
 void SvoInterface::addLog(double elaptime)
 {
-  size_t sz = svo_->getLastFrames()->size();
+  CHECK_NOTNULL(svo_.get());
+  if(svo_->stage() != Stage::kTracking)
+    return;
+
+  if(svo_->getLastFrames()->empty())
+  {
+    cout << "empty last frames" << endl;
+    return;
+  }
+  size_t sz = svo_->getLastFrames()->size();  
   Eigen::Quaterniond q = svo_->getLastFrames()->at(sz-1)->T_world_cam().getRotation().toImplementation();
   Eigen::Vector3d p = svo_->getLastFrames()->at(sz-1)->T_world_cam().getPosition();
   std::vector<double> frameres = {time_stamp, p.x(), p.y(), p.z(), q.x(), q.y(), q.z(), q.z(), elaptime};
