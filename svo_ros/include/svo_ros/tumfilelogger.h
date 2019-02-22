@@ -9,7 +9,10 @@
 #include <chrono>
 
 using namespace std;
+<<<<<<< HEAD
 #define VO_BENCH_NO_GUI_AND_ENABLE_LOGGING
+=======
+>>>>>>> 8fe4bc09c86b510a2adc34679910552bec06abba
 
 class TicToc
 {

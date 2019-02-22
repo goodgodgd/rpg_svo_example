@@ -1,5 +1,7 @@
 #pragma once
 
+#define VO_BENCH_ON
+
 #include <thread>
 
 #include <ros/ros.h>
@@ -104,6 +106,8 @@ public:
   void checkFinished();
   double time_stamp;
   std::unique_ptr<std::thread> check_thread_;
+
+  void addLog(double time_stamp, double elaptime);
 };
 
 } // namespace svo
