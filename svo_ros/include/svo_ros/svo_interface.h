@@ -1,7 +1,5 @@
 #pragma once
 
-#define VO_BENCH_ON
-
 #include <thread>
 
 #include <ros/ros.h>
@@ -82,7 +80,6 @@ public:
   void stereoCallback(
       const sensor_msgs::ImageConstPtr& msg0,
       const sensor_msgs::ImageConstPtr& msg1);
-  void addLog(double elaptime);
   void imuCallback(const sensor_msgs::ImuConstPtr& imu_msg);
   void inputKeyCallback(const std_msgs::StringConstPtr& key_input);
 
@@ -107,7 +104,7 @@ public:
   double time_stamp;
   std::unique_ptr<std::thread> check_thread_;
 
-  void addLog(double time_stamp, double elaptime);
+  void addLog(double elaptime);
 };
 
 } // namespace svo

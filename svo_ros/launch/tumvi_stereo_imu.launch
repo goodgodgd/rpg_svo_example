@@ -11,6 +11,6 @@
     <param name="outfile" value="$(arg outfile)" type="str" />
 
     <rosparam file="$(find svo_ros)/param/pinhole.yaml" />
-    <rosparam file="$(find svo_ros)/param/euroc_stereo_imu.yaml" />
+    <rosparam file="$(find svo_ros)/param/euroc_stereo.yaml" />
   </node>
 </launch>

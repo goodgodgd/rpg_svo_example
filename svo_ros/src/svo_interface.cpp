@@ -202,6 +202,11 @@ void SvoInterface::monoCallback(const sensor_msgs::ImageConstPtr& msg)
   try
   {
     image = cv_bridge::toCvCopy(msg)->image;
+    if(image.type()==CV_16UC1)
+    {
+      int scaleTo8bit = vk::param<int>(pnh_, "scale_to_8bit", 256);
+      image.convertTo(image, CV_8U, 1.f/float(scaleTo8bit));
+    }
   }
   catch (cv_bridge::Exception& e)
   {
@@ -230,10 +235,6 @@ void SvoInterface::monoCallback(const sensor_msgs::ImageConstPtr& msg)
     svo_->start();
 
   imageCallbackPostprocessing();
-
-#ifdef VO_BENCH_ON
-  addLog(time_stamp, tic.toc());
-#endif
 }
 
 void SvoInterface::stereoCallback(
@@ -248,6 +249,12 @@ void SvoInterface::stereoCallback(
   try {
     img0 = cv_bridge::toCvShare(msg0, "mono8")->image;
     img1 = cv_bridge::toCvShare(msg1, "mono8")->image;
+    if(img0.type()==CV_16UC1)
+    {
+      int scaleTo8bit = vk::param<int>(pnh_, "scale_to_8bit", 256);
+      img0.convertTo(img0, CV_8U, 1.f/float(scaleTo8bit));
+      img1.convertTo(img1, CV_8U, 1.f/float(scaleTo8bit));
+    }
   } catch (cv_bridge::Exception& e) {
     ROS_ERROR("cv_bridge exception: %s", e.what());
   }
@@ -270,27 +277,6 @@ void SvoInterface::stereoCallback(
     svo_->start();
 
   imageCallbackPostprocessing();
-
-#ifdef VO_BENCH_ON
-  addLog(time_stamp, tic.toc());
-#endif
-}
-
-void SvoInterface::addLog(double time_stamp, double elaptime)
-{
-  size_t sz = svo_->getLastFrames()->size();
-  Eigen::Quaterniond q = svo_->getLastFrames()->at(sz-1)->T_world_cam().getRotation().toImplementation();
-  Eigen::Vector3d p = svo_->getLastFrames()->at(sz-1)->T_world_cam().getPosition();
-  std::vector<double> frameres = {time_stamp, p.x(), p.y(), p.z(), q.x(), q.y(), q.z(), q.z(), elaptime};
-  TumFileLogger::instance().push(frameres);
-
-  static int index=0;
-  static double start_time=0;
-  if(start_time < 1.)
-    start_time = time_stamp;
-  if(++index % 100 == 0)
-    std::cout << "[svo2] tracking position: " << index << std::fixed << setprecision(4) << " " 
-          << (time_stamp - start_time) << " " << p.x() << " " << p.y() << " " << p.z() << std::endl;
 }
 
 void SvoInterface::addLog(double elaptime)
@@ -454,7 +440,8 @@ void SvoInterface::checkFinished()
   {
     if(time_stamp > 1 && esti_time > 1 && esti_time - time_stamp > 3)
     {
-      printf("rosbag seems to finish, exit here at %f, %f\n", time_stamp, esti_time);
+      printf("rosbag seems to finish, dump and exit here at %f, %f\n", time_stamp, esti_time);
+      TumFileLogger::instance().dump();
       ros::shutdown();
     }
 

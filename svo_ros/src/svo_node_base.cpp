@@ -30,9 +30,10 @@ SvoNodeBase::SvoNodeBase()
   }
   svo_interface_.subscribeImage();
   svo_interface_.subscribeRemoteKey();
-  svo_interface_.startCheckingFinished();
 
+  // LookAtHere
 #ifdef VO_BENCH_NO_GUI_AND_ENABLE_LOGGING
+  svo_interface_.startCheckingFinished();
   TumFileLogger::instance().init(vk::param<std::string>(private_node_handle_, 
                                 "outfile", "/data/output/svo_pose.txt"));
 #endif
@@ -41,9 +42,6 @@ SvoNodeBase::SvoNodeBase()
 void SvoNodeBase::run()
 {
   ros::spin();
-#ifdef VO_BENCH_NO_GUI_AND_ENABLE_LOGGING
-  TumFileLogger::instance().dump();
-#endif
   SVO_INFO_STREAM("SVO quit");
   svo_interface_.quit_ = true;
   SVO_INFO_STREAM("SVO terminated.\n");
