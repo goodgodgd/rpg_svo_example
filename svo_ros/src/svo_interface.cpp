@@ -293,7 +293,7 @@ void SvoInterface::addLog(double elaptime)
   size_t sz = svo_->getLastFrames()->size();  
   Eigen::Quaterniond q = svo_->getLastFrames()->at(sz-1)->T_world_cam().getRotation().toImplementation();
   Eigen::Vector3d p = svo_->getLastFrames()->at(sz-1)->T_world_cam().getPosition();
-  std::vector<double> frameres = {time_stamp, p.x(), p.y(), p.z(), q.x(), q.y(), q.z(), q.z(), elaptime};
+  std::vector<double> frameres = {time_stamp, p.x(), p.y(), p.z(), q.x(), q.y(), q.z(), q.w(), elaptime};
   TumFileLogger::instance().push(frameres);
 
   static int index=0;
