@@ -8,6 +8,7 @@
     <param name="cam1_topic" value="/cam1/image_raw" type="str" />
     <param name="imu_topic" value="/imu0" type="str" />
     <param name="calib_file" value="$(find svo_ros)/calib/tumvi_stereo_calib.yaml" type="str" />
+    <param name="scale_to_8bit" value="180" type="int" />
     <param name="outfile" value="$(arg outfile)" type="str" />
 
     <rosparam file="$(find svo_ros)/param/pinhole.yaml" />

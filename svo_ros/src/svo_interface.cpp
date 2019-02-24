@@ -197,16 +197,14 @@ void SvoInterface::monoCallback(const sensor_msgs::ImageConstPtr& msg)
   if(idle_)
     return;
 
+  static int scaleTo8bit = vk::param<int>(pnh_, "scale_to_8bit", 256);
   TicToc tic;
   cv::Mat image;
   try
   {
     image = cv_bridge::toCvCopy(msg)->image;
     if(image.type()==CV_16UC1)
-    {
-      int scaleTo8bit = vk::param<int>(pnh_, "scale_to_8bit", 256);
       image.convertTo(image, CV_8U, 1.f/float(scaleTo8bit));
-    }
   }
   catch (cv_bridge::Exception& e)
   {
@@ -244,6 +242,7 @@ void SvoInterface::stereoCallback(
   if(idle_)
     return;
 
+  static int scaleTo8bit = vk::param<int>(pnh_, "scale_to_8bit", 256);
   TicToc tic;
   cv::Mat img0, img1;
   try {
@@ -251,7 +250,6 @@ void SvoInterface::stereoCallback(
     img1 = cv_bridge::toCvShare(msg1, "mono8")->image;
     if(img0.type()==CV_16UC1)
     {
-      int scaleTo8bit = vk::param<int>(pnh_, "scale_to_8bit", 256);
       img0.convertTo(img0, CV_8U, 1.f/float(scaleTo8bit));
       img1.convertTo(img1, CV_8U, 1.f/float(scaleTo8bit));
     }
